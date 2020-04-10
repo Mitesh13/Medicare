@@ -7,13 +7,7 @@ import Patient from './Patient'
 export default class PatientsList extends Component {
 
     state = {
-                UserName:'',
-                Name:'',
-                Age:'',
-                BP:'',
-                Gender:'',
-                Diabetes:'',
-                Weight:''
+                Doc : [] // badha array chhelle state ma mukva j padse
     }
 
     DocList = []
@@ -25,32 +19,22 @@ export default class PatientsList extends Component {
             hasData:false
         })
         this.state.UserName=this.props.navigation.state.params.UserName
-        console.log("data copied",this.state.UserName)
-        console.log("Username On Patient List",this.state.UserName)
+       
     }
 
     componentDidMount(){
         
-        //db = firebase.firestore();   
+        
         this.DocList = [];
         Alert.alert(this.state.UserName)
-        console.log(this.state.UserName)
+       
         
-        firebase.firestore().collection("Doctors").doc(this.state.UserName).get().then((doc)=>
+        firebase.firestore().collection("Doctors").doc(this.state.UserName).onSnapshot((doc)=> // snapshot thi realtime updates aave
         {
-            //console.log(doc.data())
-            //console.log("inside then")
-            //console.log(doc.data());  
-            /*
-                snapshot.forEach(doc => {
-                  const data = doc.data();
-                  console.log(data);
-                });
-              */
+           
             if(doc.data()!=null && doc.data().hasOwnProperty('patients'))
             {
-                //this.setState({hasData:true})
-                console.log("Has Patients")
+                
                 var patientsArr = doc.data().patients
                 if(patientsArr.length<1)
                 {
@@ -74,11 +58,15 @@ export default class PatientsList extends Component {
                                 Weight:doc.data().Weight,
                                 Gender:doc.data().Gender
                             }
-                            console.log(this.DocObj)
+                         
                             this.DocList.push(this.DocObj)
-                            this.setState({UserName:doc.data().UserName,Name:doc.data().Name,BP:doc.data().BP,Age:doc.data().Age,Diabetes:doc.data().Diabetes,Weight:doc.data().Weight,Gender:doc.data().Gender})
+                         
+                          this.setState({Doc:this.DocList})
+                          
                         })
+                        
                     }
+                    this.DocList = [] // ahiya array clear karyo
                 }
                     
                 
@@ -98,17 +86,18 @@ export default class PatientsList extends Component {
    
     
       render() {
-            console.log(this.state.hasData)
+  
             if(this.state.hasData==true)
             {
-                console.log(this.DocList.length)
+              
                 return (
                     
                 <View style={styles.container}>
                     <FlatList
-                            data={this.DocList}
+                            data={this.state.Doc}
                             renderItem={({ item }) => <Patient Doc={item}  navigation={this.props.navigation}/>}
                             keyExtractor={item => item.Name}
+                            refreshing={true}
                     />
                 </View>
                 )
